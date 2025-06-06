@@ -1,0 +1,35 @@
+{
+    "name": "StreamDiffusion Module",
+    "version": "1.0.0",
+    "inputs": [
+        "ndi",
+        "osc"
+    ],
+    "input_params": {
+        "ndi_name": "td1",
+        "osc_ip": "127.0.0.1",
+        "osc_port": 12345,
+        "osc_path": "/prompt"
+    },
+    "process": [
+        "streamdiffusion"
+    ],
+    "process_params": {
+        "base_model": "stabilityai/sd-turbo",
+        "t_index_list": [
+            24,
+            32,
+            42,
+            46
+        ],
+        "default_prompt": "flower, detailed, fantasy, 8k, no human, no text",
+        "width": 512,
+        "height": 512
+    },
+    "outputs": [
+        "ndi"
+    ],
+    "output_params": {
+        "ndi_name": "sd1"
+    }
+}
