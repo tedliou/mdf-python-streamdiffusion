@@ -9,7 +9,6 @@ dependencies = [
     "ndi-python==5.1.1.1",
     "onnx-graphsurgeon>=0.5.8",
     "opencv-python>=4.11.0.86",
-    "polygraphy>=0.49.20",
     "python-osc>=1.9.3",
     "pywin32>=310",
     "six>=1.17.0",
@@ -17,7 +16,6 @@ dependencies = [
     "torchvision",
     "transformers>=4.51.3",
     "xformers>=0.0.30",
-    "transformers",
     "accelerate",
     "fire",
     "omegaconf",
@@ -25,8 +23,7 @@ dependencies = [
     "onnx",
     "onnxruntime",
     "protobuf",
-    "colored",
-    "pywin32"
+    "colored"
 ]
 
 [[tool.uv.index]]

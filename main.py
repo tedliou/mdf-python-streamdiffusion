@@ -2,7 +2,10 @@ from tools.module import Config
 import pythonosc.dispatcher
 import pythonosc.osc_server
 import torch
+
 from utils.wrapper import StreamDiffusionWrapper
+from PIL import Image
+
 import numpy as np
 import cv2
 import NDIlib as ndi
@@ -48,26 +51,6 @@ if "streamdiffusion" in cfg.get_process():
 # Output Config
 if "ndi" in cfg.get_outputs():
     ndi_output_name = cfg.get_output_params("ndi_name")
-
-
-def process_image(image_np: np.ndarray, range: Tuple[int, int] = (0, 1)) -> Tuple[torch.Tensor, np.ndarray]:
-    image = torch.from_numpy(image_np).permute(2, 0, 1).float() / 255.0
-    r_min, r_max = range[0], range[1]
-    image = image * (r_max - r_min) + r_min
-    return image.unsqueeze(0), image_np
-
-
-def np2tensor(image_np: np.ndarray) -> torch.Tensor:
-    height, width, _ = image_np.shape
-    imgs = []
-    img, _ = process_image(image_np)
-    imgs.append(img)
-    imgs = torch.vstack(imgs)
-    images = torch.nn.functional.interpolate(
-        imgs, size=(height, width), mode="bilinear", align_corners=False
-    )
-    image_tensors = images.to(torch.float16)
-    return image_tensors
 
 def oscprompt(address, args):
     if address == osc_server_path:
@@ -120,6 +103,8 @@ def main():
     osc_server_thread = Thread(target=osc_server.serve_forever)
     osc_server_thread.start()
 
+    warmup = False
+
     try:
         while True:
             t, v, _, _ = ndi.recv_capture_v2(ndi_recv, 3000)
@@ -132,11 +117,17 @@ def main():
 
                 frame = np.copy(v.data)
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-                frame_tensor = np2tensor(frame)
-                frame_output = stream(image=frame_tensor, prompt=prompt)
+                frame_pil = Image.fromarray(frame)
+                input = stream.preprocess_image(frame_pil)
+
+                if warmup == False:
+                    warmup = True
+                    for _ in range(stream.batch_size - 1):
+                        stream(image=input)
+
+                frame_output = stream(image=input, prompt=prompt)
                 
                 frame_output_np = np.asarray(frame_output)
-
                 frame_output_rgba = cv2.cvtColor(frame_output_np, cv2.COLOR_RGB2RGBA)
                 ndi.recv_free_video_v2(ndi_recv, v)
                 ndi_send_frame.data = frame_output_rgba
