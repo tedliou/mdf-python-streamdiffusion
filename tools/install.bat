@@ -1,3 +1,3 @@
 @echo off
-call "install-uv.bat"
-call "install-python.bat"
+call "Tools\install-uv.bat"
+call "Tools\install-python.bat"
